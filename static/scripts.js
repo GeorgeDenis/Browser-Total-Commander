@@ -84,7 +84,45 @@ function addRowSelectionListeners(tableBody, otherTableId) {
         row.classList.toggle("selected");
       }
     });
+    row.addEventListener("dblclick", function() {
+      const fullPath = this.getAttribute("data-path");
+      const parts = fullPath.split('/');
+      const partition = parts[0][0];
+      const path = parts.slice(1).join('/');
+      const tableId = otherTableId === "panel1" ? "panel2" : "panel1";
+      fetchFolderContents(tableId, partition, path);
+    });
   });
+}
+function fetchFolderContents(panelId, partition, path) {
+  console.log(`/${partition}?path=${encodeURIComponent(path)}`)
+  fetch(`/${partition}?path=${encodeURIComponent(path)}`)
+    .then((response) => response.json())
+    .then((data) => {
+      const panel = document.getElementById(panelId);
+      let tableBody = panel.getElementsByTagName("tbody")[0];
+
+      if (data.error) {
+        tableBody.innerHTML = `<tr><td colspan="4">Error: ${data.error}</td></tr>`;
+      } else {
+        let content = "";
+        for (const [name, info] of Object.entries(data.folders)) {
+          content += `<tr data-path="${info.path}">
+                          <td>${name}</td>
+                          <td>${info.extension || ""}</td>
+                          <td>${info.size}</td>
+                          <td>${info.date}</td>
+                      </tr>`;
+        }
+        tableBody.innerHTML = content;
+        const otherTableId = panelId === "panel1" ? "panel2" : "panel1";
+        addRowSelectionListeners(tableBody, otherTableId);
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      tableBody.innerHTML = `<tr><td colspan="4">Error loading data: ${error}</td></tr>`;
+    });
 }
 function deleteSelectedFiles() {
   const panels = ['panel1', 'panel2'];

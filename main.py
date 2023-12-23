@@ -40,7 +40,7 @@ def show_partition(partition):
             date = datetime.datetime.fromtimestamp(file_stats.st_ctime).strftime('%Y-%m-%d %H:%M')
             files[name] = {'path': path, 'extension': extension, 'size': size, 'date': date}
     except Exception as e:
-        return jsonify({"error": f"Nu s-a putut accesa partiția {partition}: {e}"}), 500
+        return jsonify({"error": f"Could not access partition {partition}: {e}"}), 500
 
     return jsonify({"folders": files}), 200
 
