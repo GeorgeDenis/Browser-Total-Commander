@@ -14,7 +14,11 @@ body {
   box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.2);
   cursor: pointer;
 }
-
+.btn-panel{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+}
 th {
   color:#D5DDE5;
   background:#1b1e24;

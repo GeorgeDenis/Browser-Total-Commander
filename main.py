@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, render_template
 import datetime
 import os
+import shutil
 import psutil
 
 app = Flask(__name__)
@@ -20,7 +21,11 @@ def getPartitionsId():
 
 @app.route('/<partition>', methods=['GET'])
 def show_partition(partition):
-    base_path = f"{partition}://"
+    path = request.args.get('path', None)
+    if path is not None:
+        base_path = f"{partition}://{path}"
+    else:
+        base_path = f"{partition}://"
     files = {}
     exclusions = {'$RECYCLE.BIN', '$Recycle.Bin', '.GamingRoot', 'System Volume Information'}
 
@@ -38,6 +43,20 @@ def show_partition(partition):
         return jsonify({"error": f"Nu s-a putut accesa partiția {partition}: {e}"}), 500
 
     return jsonify({"folders": files}), 200
+
+
+@app.route('/', methods=['DELETE'])
+def delete_items():
+    paths = request.json.get('paths', [])
+    for path in paths:
+        print(path)
+        if not os.path.exists(path):
+            return jsonify({"error": f"Path {path} does not exist"})
+        try:
+            shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
+        except Exception as e:
+            return jsonify({"error": f"Could not delete element {path}: {e}"})
+    return jsonify({"message": "All elements have been successfully deleted"})
 
 
 @app.route('/')

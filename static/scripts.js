@@ -1,6 +1,6 @@
 const panel1List = document.getElementById("panel1List")
 const panel2List = document.getElementById("panel2List")
-
+const otherTableId = '';
 async function loadPartitionList(panel) {
   const response = await fetch("/partitions");
   const data = await response.json();
@@ -24,7 +24,7 @@ function loadPartitionData(panelId, partition) {
       } else {
         let content = "";
         for (const [name, info] of Object.entries(data.folders)) {
-          content += `<tr>
+          content += `<tr data-path="${info.path}">
                                   <td>${name}</td>
                                   <td>${info.extension || ""}</td>
                                   <td>${info.size}</td>
@@ -80,11 +80,52 @@ function addRowSelectionListeners(tableBody, otherTableId) {
         .getElementById(otherTableId)
         .getElementsByTagName("tbody")[0];
       const selectedInOtherTable = otherTableBody.querySelector(".selected");
-
       if (!selectedInOtherTable) {
         row.classList.toggle("selected");
       }
     });
   });
 }
+function deleteSelectedFiles() {
+  const panels = ['panel1', 'panel2'];
+  let pathsToDelete = [];
+  let selectedRowsElements = [];
+
+  panels.forEach(panelId => {
+    const tableBody = document.getElementById(panelId).getElementsByTagName("tbody")[0];
+    const selectedRows = tableBody.querySelectorAll("tr.selected");
+
+    const paths = Array.from(selectedRows).map(row => {
+      selectedRowsElements.push(row);
+      return row.getAttribute('data-path');
+    });
+
+    pathsToDelete = pathsToDelete.concat(paths);
+  });
+   pathsToDelete.forEach(row => {
+   console.log(row)
+   })
+
+  if (pathsToDelete.length > 0) {
+    fetch('/', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paths: pathsToDelete }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Success:', data);
+      selectedRowsElements.forEach(row => row.remove());
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+  } else {
+    console.log("No files selected for deletion.");
+  }
+}
+
+
 
