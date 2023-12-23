@@ -1,5 +1,7 @@
 const panel1List = document.getElementById("panel1List")
 const panel2List = document.getElementById("panel2List")
+let pathPanel1 = ''
+let pathPanel2 = ''
 const otherTableId = '';
 async function loadPartitionList(panel) {
   const response = await fetch("/partitions");
@@ -35,6 +37,11 @@ function loadPartitionData(panelId, partition) {
 
         const otherTableId = panelId === "panel1" ? "panel2" : "panel1";
         addRowSelectionListeners(tableBody, otherTableId);
+        if(panelId === "panel1"){
+            pathPanel1 = partition;
+        }else{
+            pathPanel2 = partition;
+        }
       }
     })
     .catch((error) => {
@@ -95,7 +102,6 @@ function addRowSelectionListeners(tableBody, otherTableId) {
   });
 }
 function fetchFolderContents(panelId, partition, path) {
-  console.log(`/${partition}?path=${encodeURIComponent(path)}`)
   fetch(`/${partition}?path=${encodeURIComponent(path)}`)
     .then((response) => response.json())
     .then((data) => {
@@ -117,6 +123,11 @@ function fetchFolderContents(panelId, partition, path) {
         tableBody.innerHTML = content;
         const otherTableId = panelId === "panel1" ? "panel2" : "panel1";
         addRowSelectionListeners(tableBody, otherTableId);
+        if(panelId === "panel1"){
+            pathPanel1 = `${partition}?path=${path}`;
+        }else{
+            pathPanel2 = `${partition}?path=${path}`;
+        }
       }
     })
     .catch((error) => {
@@ -165,5 +176,36 @@ function deleteSelectedFiles() {
   }
 }
 
+function createFolder(panelId){
+    let path = panelId === 'panel1' ? pathPanel1 : pathPanel2
+    const fetchPath = path.split('=')[1]
+    console.log(fetchPath)
+    const partition = path[0]
+    let isPartition = false
+    if(path.length === 1){
+        path = `folder/${path}?path=/newFolder`
+        isPartition = true;
+    }else{
+        path = `/folder/${path}/newFolder`
+    }
+    fetch(path,{
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(response => response.json())
+    .then(data => {
+      console.log('Success:', data);
+      if(isPartition){
+        loadPartitionData(panelId,partition)
+        }
+      else{
+        fetchFolderContents(panelId,partition,fetchPath)
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
 
+}
 

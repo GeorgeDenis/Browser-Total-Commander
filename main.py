@@ -19,6 +19,22 @@ def getPartitionsId():
     return jsonify({'partitions': partitions}), 200
 
 
+@app.route('/folder/<partition>', methods=['POST'])
+def createFolder(partition):
+    path = request.args.get('path', None)
+    if path is not None:
+        folder_path = f"{partition}://{path}"
+    else:
+        folder_path = f"{partition}://"
+    if os.path.isdir(folder_path):
+        return jsonify({'error': 'The folder already exists'})
+    try:
+        os.mkdir(folder_path)
+        return jsonify({'message': 'Folder created successfully'})
+    except Exception as e:
+        return jsonify({"error": f"Could not create folder {folder_path}: {e}"})
+
+
 @app.route('/<partition>', methods=['GET'])
 def show_partition(partition):
     path = request.args.get('path', None)
