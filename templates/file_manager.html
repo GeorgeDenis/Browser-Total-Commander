@@ -1,0 +1,51 @@
+<!-- templates/file_manager.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>File Manager</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="file-panel" id="panel1">
+      <div>
+        <select id="panel1List"></select>
+      </div>
+      <h2>Partition 1</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Ext</th>
+            <th>Size</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+    <div class="file-panel" id="panel2">
+      <div>
+        <select id="panel2List"></select>
+      </div>
+      <h2>Partition 2</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Ext</th>
+            <th>Size</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+  </body>
+</html>
