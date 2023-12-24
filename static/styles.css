@@ -1,9 +1,29 @@
 body {
   font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: space-around;
   padding: 10px;
 }
+.content {
+  display: flex; 
+  flex-direction: row;
+  max-height: 500px; 
+  align-items: flex-start; 
+  justify-content: center;
+}
+.table-panel {
+  flex: 1; 
+  overflow-y: auto; 
+  max-height: 700px;
+}
+.btn-panel {
+  flex: 0 0 auto; 
+  position: sticky; 
+  top: 300px; 
+  align-self: start; 
+  margin-left: 3%;
+  margin-right: 3%;
+}
+
+
 .panel-buttons{
   margin-bottom: 40px;
 }
@@ -20,6 +40,9 @@ body {
     display:flex;
     flex-direction: column;
     justify-content: center;
+}
+.btn-panel {
+  
 }
 .btn{
   background:#1b1e24;

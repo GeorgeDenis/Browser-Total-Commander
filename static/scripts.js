@@ -1,44 +1,9 @@
 const panel1List = document.getElementById("panel1List");
 const panel2List = document.getElementById("panel2List");
-const modal = document.querySelector(".modal");
-const overlay = document.querySelector(".overlay");
-const closeModalBtn = document.querySelector(".btn-close");
-const createFolderPanel1 = document.getElementById("createPanel1");
-const createFolderPanel2 = document.getElementById("createPanel2");
-const submitCreateFolder = document.getElementById("btn-submit-folder");
 
 let pathPanel1 = "";
 let pathPanel2 = "";
 const otherTableId = "";
-
-let modalPanelId = "";
-
-const openModal = function (panelId) {
-  modal.classList.remove("hidden");
-  overlay.classList.remove("hidden");
-  modalPanelId = panelId;
-};
-
-const closeModal = function () {
-  modal.classList.add("hidden");
-  overlay.classList.add("hidden");
-  modalPanelId = "";
-};
-
-createFolderPanel1.addEventListener("click", () => openModal("panel1"));
-createFolderPanel2.addEventListener("click", () => openModal("panel2"));
-
-function createFolderInput(){
-  const folderValue = document.getElementById("folder").value
-  createFolder(modalPanelId,folderValue)
-  closeModal()
-}
-
-
-
-
-closeModalBtn.addEventListener("click", closeModal);
-overlay.addEventListener("click", closeModal);
 
 async function loadPartitionList(panel) {
   const response = await fetch("/partitions");
@@ -172,84 +137,7 @@ function fetchFolderContents(panelId, partition, path) {
       tableBody.innerHTML = `<tr><td colspan="4">Error loading data: ${error}</td></tr>`;
     });
 }
-function deleteSelectedFiles() {
-  const panels = ["panel1", "panel2"];
-  let currentPanelId = "";
-  let pathsToDelete = [];
-  let selectedRowsElements = [];
-
-  panels.forEach((panelId) => {
-    const tableBody = document
-      .getElementById(panelId)
-      .getElementsByTagName("tbody")[0];
-    const selectedRows = tableBody.querySelectorAll("tr.selected");
-
-    const paths = Array.from(selectedRows).map((row) => {
-      selectedRowsElements.push(row);
-      return row.getAttribute("data-path");
-    });
-    if (paths.length) {
-      currentPanelId = panelId === "panel1" ? "panel2" : "panel1";
-    }
-    pathsToDelete = pathsToDelete.concat(paths);
-  });
-  [path, partition, fetchPath, isPartition] = getPathInfo(currentPanelId);
-
-  if (pathsToDelete.length > 0) {
-    fetch("/", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ paths: pathsToDelete }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Success:", data);
-        selectedRowsElements.forEach((row) => row.remove());
-        if (isPartition) {
-          loadPartitionData(currentPanelId, partition);
-        } else {
-          fetchFolderContents(currentPanelId, partition, fetchPath);
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  } else {
-    console.log("No files selected for deletion.");
-  }
-}
-
-function createFolder(panelId,folderName) {
-  [path, partition, fetchPath, isPartition] = getPathInfo(panelId,folderName);
-  const oppositePanelId = panelId === "panel1" ? "panel2" : "panel1";
-  [oppositePath, oppositePartition, oppositeFetchPath, oppositeIsPartition] =
-    getPathInfo(oppositePanelId);
-
-  fetch(path, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Success:", data);
-      fetchDataByCurrentPath(panelId, partition, fetchPath, isPartition);
-      fetchDataByCurrentPath(
-        oppositePanelId,
-        oppositePartition,
-        oppositeFetchPath,
-        oppositeIsPartition
-      );
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
-}
-
-function getPathInfo(panelId,folderName='') {
+function getPathInfo(panelId, folderName = "") {
   let path = panelId === "panel1" ? pathPanel1 : pathPanel2;
   const fetchPath = path.split("=")[1];
   const partition = path[0];
@@ -260,6 +148,8 @@ function getPathInfo(panelId,folderName='') {
   } else {
     path = `/folder/${path}/${folderName}`;
   }
+  console.log(path, partition, fetchPath, isPartition);
+
   return [path, partition, fetchPath, isPartition];
 }
 
@@ -275,3 +165,5 @@ function fetchDataByCurrentPath(
     fetchFolderContents(panelId, partition, fetchPath);
   }
 }
+
+export {getPathInfo,fetchDataByCurrentPath,loadPartitionData,fetchFolderContents}
