@@ -11,24 +11,39 @@
   </head>
   <body>
     <div class="content">
-      <section class="modal hidden">
-        <div class="flex">
-          <button class="btn-close">⨉</button>
-        </div>
-        <div>
-          <h3>Create a folder</h3>
-        </div>
+      
+        <section class="modal hidden" id="folder-modal">
+          <div class="flex">
+            <button class="btn-close" id="btn-folder-close">⨉</button>
+          </div>
+          <div>
+            <h3>Create a folder</h3>
+          </div>
 
-        <input type="text" id="folder" placeholder="Folder name" />
-        <button class="btn-modal" id="btn-submit-folder">Submit</button>
-      </section>
+          <input type="text" id="folder" placeholder="Folder name" />
+          <button class="btn-modal" id="btn-submit-folder">Submit</button>
+        </section>
+        <section class="modal hidden" id="file-modal">
+          <div class="flex">
+            <button class="btn-close" id="btn-file-close">⨉</button>
+          </div>
+          <div>
+            <h3>Create a file</h3>
+          </div>
 
-      <div class="overlay hidden"></div>
+          <input type="text" id="file" placeholder="File name" />
+          <button class="btn-modal" id="btn-submit-file">Submit</button>
+        </section>
+
+        <div class="overlay hidden"></div>
+
       <div class="file-panel" id="panel1">
         <div class="panel-buttons">
           <select class="panelList" id="panel1List"></select>
           <button class="btn" id="createPanel1">Create Folder</button>
+          <button class="btn" id="createFilePanel1">Create File</button>
         </div>
+
         <h2>Partition 1</h2>
         <div class="table-panel">
           <table>
@@ -46,11 +61,13 @@
       </div>
       <div class="btn-panel">
         <button class="btn" id="btn-delete">Delete</button>
+        <button class="btn" id="btn-copy">Copy</button>
       </div>
       <div class="file-panel" id="panel2">
         <div class="panel-buttons">
           <select class="panelList" id="panel2List"></select>
           <button class="btn" id="createPanel2">Create Folder</button>
+          <button class="btn" id="createFilePanel2">Create File</button>
         </div>
         <h2>Partition 2</h2>
         <div class="table-panel">
@@ -79,6 +96,14 @@
     <script
       type="module"
       src="{{ url_for('static', filename='delete_data.js') }}"
+    ></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='create_file.js') }}"
+    ></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='copy_data.js') }}"
     ></script>
   </body>
 </html>

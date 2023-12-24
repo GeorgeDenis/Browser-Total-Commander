@@ -137,16 +137,16 @@ function fetchFolderContents(panelId, partition, path) {
       tableBody.innerHTML = `<tr><td colspan="4">Error loading data: ${error}</td></tr>`;
     });
 }
-function getPathInfo(panelId, folderName = "") {
+function getPathInfo(panelId, type='folder',folderName = "") {
   let path = panelId === "panel1" ? pathPanel1 : pathPanel2;
   const fetchPath = path.split("=")[1];
   const partition = path[0];
   let isPartition = false;
   if (path.length === 1) {
-    path = `folder/${path}?path=/${folderName}`;
+    path = `${type}/${path}?path=/${folderName}`;
     isPartition = true;
   } else {
-    path = `/folder/${path}/${folderName}`;
+    path = `/${type}/${path}/${folderName}`;
   }
   console.log(path, partition, fetchPath, isPartition);
 

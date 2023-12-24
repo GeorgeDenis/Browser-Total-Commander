@@ -35,6 +35,25 @@ def createFolder(partition):
         return jsonify({"error": f"Could not create folder {folder_path}: {e}"})
 
 
+@app.route('/file/<partition>', methods=['POST'])
+def createFile(partition):
+    path = request.args.get('path', None)
+    if path is not None:
+        file_path = f"{partition}://{path}"
+    else:
+        file_path = f"{partition}://"
+    if os.path.isfile(file_path):
+        return jsonify({'error': 'The file already exists'})
+    try:
+        with open(file_path, 'x') as file:
+            pass
+        return jsonify({'success': f'File created at {file_path}'}), 201
+    except FileExistsError:
+        return jsonify({'error': 'The file already exists'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/<partition>', methods=['GET'])
 def show_partition(partition):
     path = request.args.get('path', None)

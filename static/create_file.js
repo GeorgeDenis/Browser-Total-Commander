@@ -1,11 +1,10 @@
 import { getPathInfo, fetchDataByCurrentPath } from "./scripts.js";
-const modal = document.getElementById("folder-modal");
+const modal = document.getElementById("file-modal");
 const overlay = document.querySelector(".overlay");
-const closeModalBtn = document.getElementById("btn-folder-close");
-const createFolderPanel1 = document.getElementById("createPanel1");
-const createFolderPanel2 = document.getElementById("createPanel2");
-const submitCreateFolder = document.getElementById("btn-submit-folder");
-
+const closeModalBtn = document.getElementById("btn-file-close");
+const createFilePanel1 = document.getElementById("createFilePanel1");
+const createFilePanel2 = document.getElementById("createFilePanel2");
+const submitCreateFile = document.getElementById("btn-submit-file");
 let modalPanelId = "";
 
 const openModal = function (panelId) {
@@ -20,26 +19,26 @@ const closeModal = function () {
   modalPanelId = "";
 };
 
-createFolderPanel1.addEventListener("click", () => openModal("panel1"));
-createFolderPanel2.addEventListener("click", () => openModal("panel2"));
-
-export function createFolderInput() {
-  const folderValue = document.getElementById("folder").value;
-  createFolder(modalPanelId, folderValue);
-  document.getElementById("folder").value = "";
-  closeModal();
-}
-submitCreateFolder.addEventListener('click',createFolderInput);
+createFilePanel1.addEventListener("click", () => openModal("panel1"));
+createFilePanel2.addEventListener("click", () => openModal("panel2"));
 
 closeModalBtn.addEventListener("click", closeModal);
 overlay.addEventListener("click", closeModal);
 
-function createFolder(panelId, folderName) {
-  let [path, partition, fetchPath, isPartition] = getPathInfo(panelId, 'folder',folderName);
+export function createFileInput() {
+  const fileValue = document.getElementById("file").value;
+  createFile(modalPanelId, fileValue);
+  document.getElementById("file").value = "";
+  closeModal();
+}
+submitCreateFile.addEventListener('click',createFileInput);
+
+function createFile(panelId, fileName) {
+  let [path, partition, fetchPath, isPartition] = getPathInfo(panelId,'file',fileName);
 
   const oppositePanelId = panelId === "panel1" ? "panel2" : "panel1";
   let [oppositePath, oppositePartition, oppositeFetchPath, oppositeIsPartition] =
-    getPathInfo(oppositePanelId,'folder');
+    getPathInfo(oppositePanelId,'file');
 
   fetch(path, {
     method: "POST",

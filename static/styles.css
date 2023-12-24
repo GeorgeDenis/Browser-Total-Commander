@@ -15,13 +15,17 @@ body {
   max-height: 700px;
 }
 .btn-panel {
-  flex: 0 0 auto; 
+  display: flex;        
+  flex-direction: column;  
+  gap: 10px;            
+  flex-wrap: wrap;      
   position: sticky; 
-  top: 300px; 
+  top: 300px;           
   align-self: start; 
   margin-left: 3%;
   margin-right: 3%;
 }
+
 
 
 .panel-buttons{
