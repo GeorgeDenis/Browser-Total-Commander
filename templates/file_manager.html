@@ -10,10 +10,28 @@
     />
   </head>
   <body>
-    <div class="file-panel" id="panel1">
+    <section class="modal hidden">
+      <div class="flex">
+        <button class="btn-close">⨉</button>
+      </div>
       <div>
+        <h3>Create a folder</h3>
+      </div>
+
+      <input type="text" id="folder" placeholder="Folder name" />
+      <button class="btn-modal" id="btn-submit-folder" onclick="createFolderInput()">Submit</button>
+    </section>
+
+    <div class="overlay hidden"></div>
+    <div class="file-panel" id="panel1">
+      <div class="panel-buttons">
         <select class="panelList" id="panel1List"></select>
-        <button class="btn" id="createPanel1" onclick="createFolder('panel1'); ">Create Folder</button>
+        <button
+          class="btn"
+          id="createPanel1"
+        >
+          Create Folder
+        </button>
       </div>
       <h2>Partition 1</h2>
       <table>
@@ -25,17 +43,21 @@
             <th>Date</th>
           </tr>
         </thead>
-        <tbody>
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
     <div class="btn-panel" onclick="deleteSelectedFiles()">
       <button class="btn">Delete</button>
     </div>
     <div class="file-panel" id="panel2">
-      <div>
+      <div class="panel-buttons">
         <select class="panelList" id="panel2List"></select>
-        <button class="btn" id="createPanel2" onclick="createFolder('panel2'); ">Create Folder</button>
+        <button
+          class="btn"
+          id="createPanel2"
+        >
+          Create Folder
+        </button>
       </div>
       <h2>Partition 2</h2>
       <table>
@@ -47,8 +69,7 @@
             <th>Date</th>
           </tr>
         </thead>
-        <tbody>
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
