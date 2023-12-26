@@ -153,6 +153,24 @@ def move_items(partition):
     })
 
 
+@app.route('/rename', methods=['POST'])
+def rename_data():
+    data = request.json
+    src = data.get('src', None)
+    dest = data.get('dest', None)
+    print(f"src {src}")
+    print(f"dest {dest}")
+    if not src or not dest:
+        return jsonify({"error": "Source and destination must be provided"}), 400
+
+    try:
+        if not os.path.exists(src):
+            return jsonify({"error": "Source file or directory does not exist"}), 404
+        os.rename(src, dest)
+        return jsonify({"message": f"Successfully renamed {src} to {dest}"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/')
 def file_manager():

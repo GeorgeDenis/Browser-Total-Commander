@@ -110,6 +110,15 @@ function deselectLines(tableBody) {
     }
   });
 }
+function getSelectedLines(tableBody){
+  const selectedFiles = []
+  tableBody.querySelectorAll("tr").forEach((row) => {
+    if (row.classList.contains("selected")) {
+      selectedFiles.push(row.getAttribute("data-path"))
+    }
+  });
+  return selectedFiles;
+}
 function fetchFolderContents(panelId, partition, path) {
   fetch(`/${partition}?path=${encodeURIComponent(path)}`)
     .then((response) => response.json())
@@ -155,8 +164,6 @@ function getPathInfo(panelId, type = "folder", folderName = "") {
   } else {
     path = `/${type}/${path}/${folderName}`;
   }
-  console.log(path, partition, fetchPath, isPartition);
-
   return [path, partition, fetchPath, isPartition];
 }
 
@@ -179,4 +186,5 @@ export {
   loadPartitionData,
   fetchFolderContents,
   deselectLines,
+  getSelectedLines,
 };

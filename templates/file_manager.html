@@ -23,6 +23,7 @@
           <input type="text" id="folder" placeholder="Folder name" />
           <button class="btn-modal" id="btn-submit-folder">Submit</button>
         </section>
+
         <section class="modal hidden" id="file-modal">
           <div class="flex">
             <button class="btn-close" id="btn-file-close">⨉</button>
@@ -35,6 +36,18 @@
           <button class="btn-modal" id="btn-submit-file">Submit</button>
         </section>
 
+        <section class="modal hidden" id="rename-modal">
+          <div class="flex">
+            <button class="btn-close" id="btn-rename-close">⨉</button>
+          </div>
+          <div>
+            <h3>Rename a file/folder</h3>
+          </div>
+
+          <input type="text" id="rename" placeholder="File/Folder name" />
+          <button class="btn-modal" id="btn-submit-rename">Submit</button>
+        </section>
+
         <div class="overlay hidden"></div>
 
       <div class="file-panel" id="panel1">
@@ -42,6 +55,7 @@
           <select class="panelList" id="panel1List"></select>
           <button class="btn" id="createPanel1">Create Folder</button>
           <button class="btn" id="createFilePanel1">Create File</button>
+          <button class="btn" id="renameFilePanel1">Rename</button>
         </div>
 
         <h2>Partition 1</h2>
@@ -69,6 +83,7 @@
           <select class="panelList" id="panel2List"></select>
           <button class="btn" id="createPanel2">Create Folder</button>
           <button class="btn" id="createFilePanel2">Create File</button>
+          <button class="btn" id="renameFilePanel2">Rename</button>
         </div>
         <h2>Partition 2</h2>
         <div class="table-panel">
@@ -109,6 +124,10 @@
     <script
       type="module"
       src="{{ url_for('static', filename='move_data.js') }}"
+    ></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='rename_data.js') }}"
     ></script>
   </body>
 </html>
