@@ -62,6 +62,7 @@
       <div class="btn-panel">
         <button class="btn" id="btn-delete">Delete</button>
         <button class="btn" id="btn-copy">Copy</button>
+        <button class="btn" id="btn-move">Move</button>
       </div>
       <div class="file-panel" id="panel2">
         <div class="panel-buttons">
@@ -104,6 +105,10 @@
     <script
       type="module"
       src="{{ url_for('static', filename='copy_data.js') }}"
+    ></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='move_data.js') }}"
     ></script>
   </body>
 </html>

@@ -116,6 +116,44 @@ def copy_items(partition):
     return jsonify({"message": "Copy operation completed", "results": results})
 
 
+@app.route('/move/<partition>', methods=['POST'])
+def move_items(partition):
+    path = request.args.get('path', None)
+    base_path = f"{partition}://{path}" if path else f"{partition}://"
+    paths = request.json.get('paths', [])
+    results = []
+    for src_path in paths:
+        try:
+            item_name = os.path.basename(src_path)
+            dest_path = os.path.join(base_path, item_name)
+            if os.path.exists(dest_path):
+                results.append({
+                    "src_path": src_path,
+                    "dest_path": dest_path,
+                    "status": "Failed",
+                    "reason": "Destination file or directory already exists"
+                })
+                continue
+            shutil.move(src_path, dest_path)
+
+            results.append({
+                "src_path": src_path,
+                "dest_path": dest_path,
+                "status": "Moved"
+            })
+        except Exception as e:
+            results.append({
+                "src_path": src_path,
+                "status": "Failed",
+                "reason": str(e)
+            })
+    return jsonify({
+        "message": "Move operation completed",
+        "results": results
+    })
+
+
+
 @app.route('/')
 def file_manager():
     return render_template('file_manager.html')
