@@ -1,5 +1,7 @@
 const panel1List = document.getElementById("panel1List");
 const panel2List = document.getElementById("panel2List");
+const btnBack1 = document.getElementById("btn-back1");
+const btnBack2 = document.getElementById("btn-back2");
 
 let pathPanel1 = "";
 let pathPanel2 = "";
@@ -110,11 +112,11 @@ function deselectLines(tableBody) {
     }
   });
 }
-function getSelectedLines(tableBody){
-  const selectedFiles = []
+function getSelectedLines(tableBody) {
+  const selectedFiles = [];
   tableBody.querySelectorAll("tr").forEach((row) => {
     if (row.classList.contains("selected")) {
-      selectedFiles.push(row.getAttribute("data-path"))
+      selectedFiles.push(row.getAttribute("data-path"));
     }
   });
   return selectedFiles;
@@ -188,3 +190,19 @@ export {
   deselectLines,
   getSelectedLines,
 };
+
+const goBack = function (panelId) {
+  let pathPanel = panelId === "panel1" ? pathPanel1 : pathPanel2;
+  let [path, partition, fetchPath, isPartition] = getPathInfo(panelId);
+  if (isPartition) {
+    return;
+  } else {
+    fetchPath = fetchPath.replace(/\\/g, "/");
+    let segments = fetchPath.split("/");
+    segments.pop();
+    let newPath = segments.join("/");
+    fetchFolderContents(panelId, partition, newPath);
+  }
+};
+btnBack1.addEventListener("click", () => goBack("panel1"));
+btnBack2.addEventListener("click", () => goBack("panel2"));
