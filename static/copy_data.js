@@ -1,8 +1,14 @@
-import { getPathInfo,loadPartitionData,fetchFolderContents } from "./scripts.js";
+import {
+  getPathInfo,
+  loadPartitionData,
+  fetchFolderContents,
+  fetchDataByCurrentPath,
+  deselectLines,
+} from "./scripts.js";
 
-const copyButton = document.getElementById("btn-copy")
+const copyButton = document.getElementById("btn-copy");
 
-function copySelectedFiles(){
+function copySelectedFiles() {
   const panels = ["panel1", "panel2"];
   let currentPanelId = "";
   let pathsToCopy = [];
@@ -23,12 +29,37 @@ function copySelectedFiles(){
     }
     pathsToCopy = pathsToCopy.concat(paths);
   });
-  let [path, partition, fetchPath, isPartition] = getPathInfo(currentPanelId);
+  let [path, partition, fetchPath, isPartition] = getPathInfo(
+    currentPanelId,
+    "copy"
+  );
+  const oppositePanelId = currentPanelId === "panel1" ? "panel2" : "panel1";
   if (pathsToCopy.length > 0) {
-    console.log(pathsToCopy)
+    fetch(path, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ paths: pathsToCopy }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data.message);
+        const results = data.results;
+        results.forEach((result) => {
+          console.log(result);
+        });
+        fetchDataByCurrentPath(currentPanelId, partition, fetchPath, isPartition);
+        const panel = document.getElementById(oppositePanelId);
+        let tableBody = panel.getElementsByTagName("tbody")[0];
+        deselectLines(tableBody)
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   } else {
     console.log("No files selected for copying.");
   }
 }
 
-copyButton.addEventListener("click",copySelectedFiles);
+copyButton.addEventListener("click", copySelectedFiles);

@@ -22,10 +22,8 @@ def getPartitionsId():
 @app.route('/folder/<partition>', methods=['POST'])
 def createFolder(partition):
     path = request.args.get('path', None)
-    if path is not None:
-        folder_path = f"{partition}://{path}"
-    else:
-        folder_path = f"{partition}://"
+    folder_path = f"{partition}://{path}" if path else f"{partition}://"
+
     if os.path.isdir(folder_path):
         return jsonify({'error': 'The folder already exists'})
     try:
@@ -38,10 +36,8 @@ def createFolder(partition):
 @app.route('/file/<partition>', methods=['POST'])
 def createFile(partition):
     path = request.args.get('path', None)
-    if path is not None:
-        file_path = f"{partition}://{path}"
-    else:
-        file_path = f"{partition}://"
+    file_path = f"{partition}://{path}" if path else f"{partition}://"
+
     if os.path.isfile(file_path):
         return jsonify({'error': 'The file already exists'})
     try:
@@ -57,10 +53,7 @@ def createFile(partition):
 @app.route('/<partition>', methods=['GET'])
 def show_partition(partition):
     path = request.args.get('path', None)
-    if path is not None:
-        base_path = f"{partition}://{path}"
-    else:
-        base_path = f"{partition}://"
+    base_path = f"{partition}://{path}" if path else f"{partition}://"
     files = {}
     exclusions = {'$RECYCLE.BIN', '$Recycle.Bin', '.GamingRoot', 'System Volume Information'}
 
@@ -84,7 +77,6 @@ def show_partition(partition):
 def delete_items():
     paths = request.json.get('paths', [])
     for path in paths:
-        print(path)
         if not os.path.exists(path):
             return jsonify({"error": f"Path {path} does not exist"})
         try:
@@ -92,6 +84,36 @@ def delete_items():
         except Exception as e:
             return jsonify({"error": f"Could not delete element {path}: {e}"})
     return jsonify({"message": "All elements have been successfully deleted"})
+
+
+@app.route('/copy/<partition>', methods=['POST'])
+def copy_items(partition):
+    path = request.args.get('path', None)
+    base_path = f"{partition}://{path}" if path else f"{partition}://"
+
+    paths = request.json.get('paths', [])
+    results = []
+
+    for src_path in paths:
+        try:
+            filename = os.path.basename(src_path)
+            dest_path = os.path.join(base_path, filename)
+            if os.path.exists(dest_path):
+                results.append({"src_path": src_path, "dest_path": dest_path, "status": "Skipped",
+                                "reason": "Destination file already exists"})
+                continue
+            if os.path.isdir(src_path):
+                shutil.copytree(src_path, dest_path)
+            elif os.path.isfile(src_path):
+                shutil.copy(src_path, dest_path)
+            else:
+                results.append(
+                    {"src_path": src_path, "status": "Failed", "reason": "Source is not a valid file or directory"})
+                continue
+            results.append({"src_path": src_path, "dest_path": dest_path, "status": "Copied"})
+        except Exception as e:
+            results.append({"src_path": src_path, "status": "Failed", "reason": str(e)})
+    return jsonify({"message": "Copy operation completed", "results": results})
 
 
 @app.route('/')

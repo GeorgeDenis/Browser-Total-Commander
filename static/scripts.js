@@ -103,6 +103,13 @@ function addRowSelectionListeners(tableBody, otherTableId) {
     });
   });
 }
+function deselectLines(tableBody) {
+  tableBody.querySelectorAll("tr").forEach((row) => {
+    if (row.classList.contains("selected")) {
+      row.classList.remove("selected");
+    }
+  });
+}
 function fetchFolderContents(panelId, partition, path) {
   fetch(`/${partition}?path=${encodeURIComponent(path)}`)
     .then((response) => response.json())
@@ -137,7 +144,7 @@ function fetchFolderContents(panelId, partition, path) {
       tableBody.innerHTML = `<tr><td colspan="4">Error loading data: ${error}</td></tr>`;
     });
 }
-function getPathInfo(panelId, type='folder',folderName = "") {
+function getPathInfo(panelId, type = "folder", folderName = "") {
   let path = panelId === "panel1" ? pathPanel1 : pathPanel2;
   const fetchPath = path.split("=")[1];
   const partition = path[0];
@@ -166,4 +173,10 @@ function fetchDataByCurrentPath(
   }
 }
 
-export {getPathInfo,fetchDataByCurrentPath,loadPartitionData,fetchFolderContents}
+export {
+  getPathInfo,
+  fetchDataByCurrentPath,
+  loadPartitionData,
+  fetchFolderContents,
+  deselectLines,
+};
