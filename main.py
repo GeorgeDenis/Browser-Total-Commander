@@ -172,6 +172,44 @@ def rename_data():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/textfile/<partition>', methods=['GET'])
+def get_textfile(partition):
+    path = request.args.get('path', None)
+    if not path:
+        return jsonify({"error": "Path is required"}), 400
+    base_path = f"{partition}://{path}"
+    try:
+        if not os.path.isfile(base_path):
+            return jsonify({"error": "File does not exist or is not a file"}), 404
+        with open(base_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return jsonify({"text": content})
+    except IOError as e:
+        return jsonify({"error": f"Could not read file: {e}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/textfile/<partition>', methods=['POST'])
+def edit_textfile(partition):
+    path = request.args.get('path', None)
+    data = request.json
+    text = data.get('text', None)
+    if not path:
+        return jsonify({"error": "Path is required"}), 400
+    base_path = f"{partition}://{path}"
+    try:
+        if not os.path.isfile(base_path):
+            return jsonify({"error": "File does not exist or is not a file"}), 404
+        with open(base_path, 'w', encoding='utf-8') as f:
+            content = f.write(text)
+        return jsonify({"message": f"Successfully edited {path}"})
+    except IOError as e:
+        return jsonify({"error": f"Could not edit file: {e}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/')
 def file_manager():
     return render_template('file_manager.html')

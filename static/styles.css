@@ -26,6 +26,11 @@ body {
   margin-right: 3%;
 }
 
+#edit {
+  width: 440px;  
+  height: 300px; 
+  resize: none;  
+}
 
 
 .panel-buttons{

@@ -48,6 +48,18 @@
           <button class="btn-modal" id="btn-submit-rename">Submit</button>
         </section>
 
+        <section class="modal hidden" id="edit-modal">
+          <div class="flex">
+            <button class="btn-close" id="btn-edit-close">⨉</button>
+          </div>
+          <div>
+            <h3>Edit a text file</h3>
+          </div>
+
+          <textarea type="textarea" id="edit" placeholder="Edit text file"></textarea>
+          <button class="btn-modal" id="btn-submit-edit">Submit</button>
+        </section>
+
         <div class="overlay hidden"></div>
 
       <div class="file-panel" id="panel1">
@@ -77,6 +89,7 @@
         <button class="btn" id="btn-delete">Delete</button>
         <button class="btn" id="btn-copy">Copy</button>
         <button class="btn" id="btn-move">Move</button>
+        <button class="btn" id="btn-edit">Edit</button>
       </div>
       <div class="file-panel" id="panel2">
         <div class="panel-buttons">
@@ -128,6 +141,10 @@
     <script
       type="module"
       src="{{ url_for('static', filename='rename_data.js') }}"
+    ></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='edit_data.js') }}"
     ></script>
   </body>
 </html>
