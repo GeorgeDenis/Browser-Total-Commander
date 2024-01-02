@@ -5,7 +5,7 @@ import {
   fetchDataByCurrentPath,
   deselectLines,
 } from "./scripts.js";
-
+import { openToast } from "./toast.js";
 const moveButton = document.getElementById("btn-move");
 
 function moveSelectedFiles() {
@@ -50,11 +50,23 @@ function moveSelectedFiles() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Success:", data.message);
+        let message = data.message;
+        let dataResults = [];
         const results = data.results;
+        let resultText = "";
         results.forEach((result) => {
-          console.log(result);
+          if (result.dest_path)
+            resultText += `Destination Path: ${result.dest_path} `;
+          if (result.src_path) resultText += `Source Path: ${result.src_path} `;
+          if (result.reason) resultText += `Reason: ${result.reason} `;
+          if (result.status) resultText += `Status: ${result.status}`;
+          dataResults.push(resultText);
+          resultText = "";
         });
+        data.message = message;
+        data["type"] = true;
+        data["results"] = dataResults;
+        openToast(data);
         fetchDataByCurrentPath(
           currentPanelId,
           partition,
@@ -75,7 +87,7 @@ function moveSelectedFiles() {
         console.error("Error:", error);
       });
   } else {
-    console.log("No files selected for copying.");
+    console.log("No files selected to be moved.");
   }
 }
 

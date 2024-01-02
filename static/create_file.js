@@ -1,7 +1,9 @@
 import { getPathInfo, fetchDataByCurrentPath } from "./scripts.js";
+import { openToast} from "./toast.js";
 const modal = document.getElementById("file-modal");
 const overlay = document.querySelector(".overlay");
 const closeModalBtn = document.getElementById("btn-file-close");
+
 const createFilePanel1 = document.getElementById("createFilePanel1");
 const createFilePanel2 = document.getElementById("createFilePanel2");
 const submitCreateFile = document.getElementById("btn-submit-file");
@@ -48,7 +50,7 @@ function createFile(panelId, fileName) {
   })
     .then((response) => response.json())
     .then((data) => {
-      console.log("Success:", data);
+      openToast(data)
       fetchDataByCurrentPath(panelId, partition, fetchPath, isPartition);
       fetchDataByCurrentPath(
         oppositePanelId,

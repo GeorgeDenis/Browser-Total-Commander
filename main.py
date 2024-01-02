@@ -43,7 +43,7 @@ def createFile(partition):
     try:
         with open(file_path, 'x') as file:
             pass
-        return jsonify({'success': f'File created at {file_path}'}), 201
+        return jsonify({'message': f'File created at {file_path}'}), 201
     except FileExistsError:
         return jsonify({'error': 'The file already exists'}), 400
     except Exception as e:
@@ -99,7 +99,7 @@ def copy_items(partition):
             filename = os.path.basename(src_path)
             dest_path = os.path.join(base_path, filename)
             if os.path.exists(dest_path):
-                results.append({"src_path": src_path, "dest_path": dest_path, "status": "Skipped",
+                results.append({"src_path": src_path, "dest_path": dest_path, "status": "Failed",
                                 "reason": "Destination file already exists"})
                 continue
             if os.path.isdir(src_path):
@@ -110,7 +110,7 @@ def copy_items(partition):
                 results.append(
                     {"src_path": src_path, "status": "Failed", "reason": "Source is not a valid file or directory"})
                 continue
-            results.append({"src_path": src_path, "dest_path": dest_path, "status": "Copied"})
+            results.append({"src_path": src_path, "dest_path": dest_path, "status": "Success"})
         except Exception as e:
             results.append({"src_path": src_path, "status": "Failed", "reason": str(e)})
     return jsonify({"message": "Copy operation completed", "results": results})
@@ -139,7 +139,7 @@ def move_items(partition):
             results.append({
                 "src_path": src_path,
                 "dest_path": dest_path,
-                "status": "Moved"
+                "status": "Success"
             })
         except Exception as e:
             results.append({
@@ -158,14 +158,13 @@ def rename_data():
     data = request.json
     src = data.get('src', None)
     dest = data.get('dest', None)
-    print(f"src {src}")
-    print(f"dest {dest}")
     if not src or not dest:
         return jsonify({"error": "Source and destination must be provided"}), 400
-
     try:
         if not os.path.exists(src):
             return jsonify({"error": "Source file or directory does not exist"}), 404
+        if os.path.exists(dest):
+            return jsonify({"error": "Destination file or directory already exists"}), 400
         os.rename(src, dest)
         return jsonify({"message": f"Successfully renamed {src} to {dest}"})
     except Exception as e:

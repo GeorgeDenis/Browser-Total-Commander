@@ -5,6 +5,7 @@ import {
   fetchDataByCurrentPath,
   deselectLines,
 } from "./scripts.js";
+import { openToast } from "./toast.js";
 
 const copyButton = document.getElementById("btn-copy");
 
@@ -44,15 +45,32 @@ function copySelectedFiles() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Success:", data.message);
+        let message = data.message;
+        let dataResults = [];
         const results = data.results;
+        let resultText = "";
         results.forEach((result) => {
-          console.log(result);
+          if (result.dest_path)
+            resultText += `Destination Path: ${result.dest_path} `;
+          if (result.src_path) resultText += `Source Path: ${result.src_path} `;
+          if (result.reason) resultText += `Reason: ${result.reason} `;
+          if (result.status) resultText += `Status: ${result.status}`;
+          dataResults.push(resultText);
+          resultText = "";
         });
-        fetchDataByCurrentPath(currentPanelId, partition, fetchPath, isPartition);
+        data.message = message;
+        data["type"] = true;
+        data["results"] = dataResults;
+        openToast(data);
+        fetchDataByCurrentPath(
+          currentPanelId,
+          partition,
+          fetchPath,
+          isPartition
+        );
         const panel = document.getElementById(oppositePanelId);
         let tableBody = panel.getElementsByTagName("tbody")[0];
-        deselectLines(tableBody)
+        deselectLines(tableBody);
       })
       .catch((error) => {
         console.error("Error:", error);

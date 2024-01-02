@@ -60,6 +60,17 @@
           <button class="btn-modal" id="btn-submit-edit">Submit</button>
         </section>
 
+        <section class="modal hidden" id="toast-modal">
+          <div class="flex">
+            <button class="btn-close" id="btn-toast-close">⨉</button>
+          </div>
+          <div>
+            <h3>Response</h3>
+          </div>
+          <div id="data-container">
+          <div>
+        </section>
+
         <div class="overlay hidden"></div>
 
       <div class="file-panel" id="panel1">
@@ -147,6 +158,10 @@
     <script
       type="module"
       src="{{ url_for('static', filename='edit_data.js') }}"
+    ></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='toast.js') }}"
     ></script>
   </body>
 </html>

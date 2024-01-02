@@ -6,6 +6,7 @@ import {
   deselectLines,
 } from "./scripts.js";
 import { getDataToRename } from "./rename_data.js";
+import { openToast } from "./toast.js";
 
 const editButton = document.getElementById("btn-edit");
 const modal = document.getElementById("edit-modal");
@@ -29,7 +30,9 @@ const editSelectedFiles = async function () {
       });
       const data = await response.json();
       console.log("Success:", data);
-      closeModal()
+      closeModal();
+      data['type'] = false;
+      openToast(data);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -50,9 +53,12 @@ const openModal = function () {
     closeModal();
     return;
   }
+
   let [partition, path] = verifyEditModal(selectedFiles);
-  let textareaValue = loadTextAndSetToTextarea(partition, path);
-  editArea.value = textareaValue;
+  if (partition && path) {
+    let textareaValue = loadTextAndSetToTextarea(partition, path);
+    editArea.value = textareaValue;
+  }
 };
 
 const verifyEditModal = function (selectedFiles) {
@@ -67,7 +73,7 @@ const verifyEditModal = function (selectedFiles) {
   ) {
     console.log("You need to select a text file to edit!");
     closeModal();
-    return;
+    return [null,null];
   }
   const partition = srcNameArrayCopy[0];
   const path = srcNameArrayCopy.slice(4);
@@ -102,4 +108,4 @@ async function loadTextAndSetToTextarea(partition, path) {
   editArea.value = textareaValue;
 }
 
-submitEditFile.addEventListener("click",editSelectedFiles)
+submitEditFile.addEventListener("click", editSelectedFiles);

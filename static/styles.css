@@ -195,7 +195,7 @@ td.text-right {
 
 .modal p {
   font-size: 0.9rem;
-  color: #777;
+   
   margin: 0.4rem 0 0.2rem;
 }
 
@@ -241,4 +241,10 @@ button {
 }
 .hidden {
   display: none;
+}
+.success{
+ color: green;
+}
+.error{
+  color: red;
 }

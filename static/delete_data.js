@@ -1,4 +1,5 @@
 import { getPathInfo,loadPartitionData,fetchFolderContents } from "./scripts.js";
+import { openToast} from "./toast.js";
 
 const deleteButton = document.getElementById("btn-delete")
 
@@ -35,7 +36,8 @@ function deleteSelectedFiles() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Success:", data);
+        data["type"] = false;
+        openToast(data)
         selectedRowsElements.forEach((row) => row.remove());
         if (isPartition) {
           loadPartitionData(currentPanelId, partition);

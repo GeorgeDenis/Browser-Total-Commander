@@ -129,7 +129,7 @@ function fetchFolderContents(panelId, partition, path) {
       let tableBody = panel.getElementsByTagName("tbody")[0];
 
       if (data.error) {
-        tableBody.innerHTML = `<tr><td colspan="4">Error: ${data.error}</td></tr>`;
+        return;
       } else {
         let content = "";
         for (const [name, info] of Object.entries(data.folders)) {
@@ -182,15 +182,6 @@ function fetchDataByCurrentPath(
   }
 }
 
-export {
-  getPathInfo,
-  fetchDataByCurrentPath,
-  loadPartitionData,
-  fetchFolderContents,
-  deselectLines,
-  getSelectedLines,
-};
-
 const goBack = function (panelId) {
   let pathPanel = panelId === "panel1" ? pathPanel1 : pathPanel2;
   let [path, partition, fetchPath, isPartition] = getPathInfo(panelId);
@@ -206,3 +197,14 @@ const goBack = function (panelId) {
 };
 btnBack1.addEventListener("click", () => goBack("panel1"));
 btnBack2.addEventListener("click", () => goBack("panel2"));
+
+export {
+  getPathInfo,
+  fetchDataByCurrentPath,
+  loadPartitionData,
+  fetchFolderContents,
+  deselectLines,
+  getSelectedLines,
+};
+
+

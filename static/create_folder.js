@@ -1,4 +1,5 @@
 import { getPathInfo, fetchDataByCurrentPath } from "./scripts.js";
+import { openToast} from "./toast.js";
 const modal = document.getElementById("folder-modal");
 const overlay = document.querySelector(".overlay");
 const closeModalBtn = document.getElementById("btn-folder-close");
@@ -49,7 +50,8 @@ function createFolder(panelId, folderName) {
   })
     .then((response) => response.json())
     .then((data) => {
-      console.log("Success:", data);
+      data["type"] = false;
+        openToast(data)
       fetchDataByCurrentPath(panelId, partition, fetchPath, isPartition);
       fetchDataByCurrentPath(
         oppositePanelId,
