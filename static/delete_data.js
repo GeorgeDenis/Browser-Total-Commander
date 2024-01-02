@@ -36,8 +36,21 @@ function deleteSelectedFiles() {
     })
       .then((response) => response.json())
       .then((data) => {
-        data["type"] = false;
-        openToast(data)
+        let message = data.message;
+        let dataResults = [];
+        const results = data.results;
+        let resultText = "";
+        results.forEach((result) => {
+          if (result.src_path) resultText += `Source Path: ${result.src_path} `;
+          if (result.reason) resultText += `Reason: ${result.reason} `;
+          if (result.status) resultText += `Status: ${result.status}`;
+          dataResults.push(resultText);
+          resultText = "";
+        });
+        data.message = message;
+        data["type"] = true;
+        data["results"] = dataResults;
+        openToast(data);
         selectedRowsElements.forEach((row) => row.remove());
         if (isPartition) {
           loadPartitionData(currentPanelId, partition);

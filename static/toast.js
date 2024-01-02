@@ -25,7 +25,7 @@ const openToast = function (data) {
       } else if (result.includes("Status: Success")) {
         p.classList.add("success"); 
       }
-      p.textContent = `Result: ${result}`; 
+      p.textContent = `${result}`; 
       dataContainer.appendChild(p); 
     });
   }

@@ -137,9 +137,9 @@ def show_partition(partition):
 @app.route('/', methods=['DELETE'])
 def delete_items():
     """
-        Delete a file or a selection of files from the specified paths.
+        Delete files and directories from the specified paths.
 
-        This function attempts to delete a file and directories specified in the 'paths' JSON array from the request
+        This function attempts to delete files and directories specified in the 'paths' JSON array from the request
         body.
 
         Returns:
@@ -147,14 +147,17 @@ def delete_items():
             indicating the file or the files were deleted. On failure, returns an error message with details.
         """
     paths = request.json.get('paths', [])
+    results = []
     for path in paths:
-        if not os.path.exists(path):
-            return jsonify({"error": f"Path {path} does not exist"})
         try:
+            if not os.path.exists(path):
+                results.append({"path": path, "status": "Failed", "reason": f"Path {path} does not exist"})
+                continue
             shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
+            results.append({"src_path": path, "status": "Success"})
         except Exception as e:
-            return jsonify({"error": f"Could not delete element {path}: {e}"})
-    return jsonify({"message": "All elements have been successfully deleted"})
+            results.append({"src_path": path, "status": "Failed", "reason": f"Could not delete element {path}: {e}"})
+    return jsonify({"message": "All elements have been successfully deleted", "results": results})
 
 
 @app.route('/copy/<partition>', methods=['POST'])
