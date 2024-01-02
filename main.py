@@ -1,3 +1,11 @@
+"""Browser Total Commander Module.
+
+This module provides a web application that mimics the functionality of Total Commander,
+a file manager with capabilities for file browsing, organizing, and editing. It allows users
+to perform various file operations copy, delete, move, rename, create files, create folders, edit text files and view
+content within a browser interface. The module is designed to offer a similar experience to Total Commander users with
+additional web-base benefits.
+"""
 from flask import Flask, jsonify, request, render_template
 import datetime
 import os
@@ -8,7 +16,17 @@ app = Flask(__name__)
 
 
 @app.route('/partitions', methods=['GET'])
-def getPartitionsId():
+def get_partition():
+    """
+    Get a list of disk partitions.
+
+    Retrieves the mounted disk partitions using the psutil library and returns them
+    as a JSON response. Each partition is represented by its device name.
+
+    Returns:
+        A JSON object with a 'partitions' key containing a list of partitions.
+        On error, returns a JSON object with an 'error' key and status code 500.
+    """
     partitions = []
     try:
         for partition in psutil.disk_partitions():
@@ -20,10 +38,26 @@ def getPartitionsId():
 
 
 @app.route('/folder/<partition>', methods=['POST'])
-def createFolder(partition):
+def create_folder(partition):
+    """
+    Create a folder in the specified partition and path.
+
+    This function creates a folder in the given partition with the path provided
+    via 'path' argument in the request. If the 'path' argument is not provided, it defaults
+    to the root of the specified partition.
+
+    Args:
+        partition: A string indicating the partition on which to create the folder.
+
+    Returns:
+        A JSON response indicating success or failure. On success, returns a message
+        indicating the folder was created. On failure, returns an error message with details.
+    """
     path = request.args.get('path', None)
+    # Construct the full folder path
     folder_path = f"{partition}://{path}" if path else f"{partition}://"
 
+    # Check if the folder already exists
     if os.path.isdir(folder_path):
         return jsonify({'error': 'The folder already exists'})
     try:
@@ -34,7 +68,20 @@ def createFolder(partition):
 
 
 @app.route('/file/<partition>', methods=['POST'])
-def createFile(partition):
+def create_file(partition):
+    """Create a file in the specified partition and path.
+
+        This function creates a file in the given partition with the path provided
+        via 'path' argument in the request. If the 'path' argument is not provided, it defaults
+        to the root of the specified partition.
+
+        Args:
+            partition: A string indicating the partition on which to create the file.
+
+        Returns:
+            A JSON response indicating success or failure. On success, returns a message
+            indicating the file was created. On failure, returns an error message with details.
+        """
     path = request.args.get('path', None)
     file_path = f"{partition}://{path}" if path else f"{partition}://"
 
@@ -52,6 +99,20 @@ def createFile(partition):
 
 @app.route('/<partition>', methods=['GET'])
 def show_partition(partition):
+    """Returns the files and directories structure from the specified partition and path.
+
+        This function returns the files and directories structure in the given partition with the path provided
+        via 'path' argument in the request. If the 'path' argument is not provided, it defaults
+        to the root of the specified partition.
+
+        Args:
+            partition: A string indicating the partition on which to create the file.
+
+        Returns:
+            A JSON response indicating success or failure. On success, returns the files from the specified partition
+            and path along some properties like path, extension, size, the date when the file was created. On failure,
+            returns an error message with details.
+        """
     path = request.args.get('path', None)
     base_path = f"{partition}://{path}" if path else f"{partition}://"
     files = {}
@@ -75,6 +136,16 @@ def show_partition(partition):
 
 @app.route('/', methods=['DELETE'])
 def delete_items():
+    """
+        Delete a file or a selection of files from the specified paths.
+
+        This function attempts to delete a file and directories specified in the 'paths' JSON array from the request
+        body.
+
+        Returns:
+            A JSON response indicating success or failure. On success, returns a message
+            indicating the file or the files were deleted. On failure, returns an error message with details.
+        """
     paths = request.json.get('paths', [])
     for path in paths:
         if not os.path.exists(path):
@@ -88,6 +159,21 @@ def delete_items():
 
 @app.route('/copy/<partition>', methods=['POST'])
 def copy_items(partition):
+    """Copy items from the given paths to the specified partition and path.
+
+        This function attempts to copy files and directories specified in the 'paths'
+        JSON array from the request body to the target partition and path with the path provided
+        via 'path' argument in the request. If the 'path' argument is not provided, it defaults
+        to the root of the specified partition. It returns a summary of the copy operations, including successes
+        and failures.
+
+        Args:
+            partition: A string indicating the target partition for the copy operation.
+
+        Returns:
+            A JSON object summarizing the results of the copy operations, including
+            paths attempted, status of each, and any failure reasons.
+        """
     path = request.args.get('path', None)
     base_path = f"{partition}://{path}" if path else f"{partition}://"
 
@@ -118,6 +204,19 @@ def copy_items(partition):
 
 @app.route('/move/<partition>', methods=['POST'])
 def move_items(partition):
+    """Move items from the given paths to the specified partition and path.
+
+        This function attempts to move files and directories specified in the 'paths'
+        JSON array from the request body to the target partition and path. It returns
+        a summary of the move operations, including successes and failures.
+
+        Args:
+            partition: A string indicating the target partition for the move operation.
+
+        Returns:
+            A JSON object summarizing the results of the move operations, including
+            paths attempted, status of each, and any failure reasons.
+        """
     path = request.args.get('path', None)
     base_path = f"{partition}://{path}" if path else f"{partition}://"
     paths = request.json.get('paths', [])
@@ -155,24 +254,46 @@ def move_items(partition):
 
 @app.route('/rename', methods=['POST'])
 def rename_data():
+    """Rename a file or a folder from the specified source name with the specified destination name.
+
+        This function renames a file or a folder name from the specified source with the destination name,
+        both source name and destination name are taken from the request body.
+
+        Returns:
+            A JSON response indicating success or failure. On success, returns a message
+            indicating the file or folder was renamed with the provided name. On failure,
+            returns an error message with details.
+        """
     data = request.json
-    src = data.get('src', None)
-    dest = data.get('dest', None)
-    if not src or not dest:
+    source = data.get('src', None)
+    destination = data.get('dest', None)
+    if not source or not destination:
         return jsonify({"error": "Source and destination must be provided"}), 400
     try:
-        if not os.path.exists(src):
+        if not os.path.exists(source):
             return jsonify({"error": "Source file or directory does not exist"}), 404
-        if os.path.exists(dest):
+        if os.path.exists(destination):
             return jsonify({"error": "Destination file or directory already exists"}), 400
-        os.rename(src, dest)
-        return jsonify({"message": f"Successfully renamed {src} to {dest}"})
+        os.rename(source, destination)
+        return jsonify({"message": f"Successfully renamed {source} to {destination}"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 @app.route('/textfile/<partition>', methods=['GET'])
 def get_textfile(partition):
+    """Get a text file content from the specified partition and path.
+
+        This function takes a text file content from the specified partition and path with the path provided
+        via 'path' argument in the request. If the 'path' argument is not provided, it returns an error message.
+
+        Args:
+            partition: A string indicating the partition on which to get the text content.
+
+        Returns:
+            A JSON response indicating success or failure. On success, returns a message
+            indicating the file was edited. On failure, returns an error message with details.
+        """
     path = request.args.get('path', None)
     if not path:
         return jsonify({"error": "Path is required"}), 400
@@ -191,6 +312,18 @@ def get_textfile(partition):
 
 @app.route('/textfile/<partition>', methods=['POST'])
 def edit_textfile(partition):
+    """Edit a text file from the specified partition and path.
+
+    This function edits a file from the specified partition and path with the path provided
+    via 'path' argument in the request. If the 'path' argument is not provided, it returns an error message.
+
+    Args:
+        partition: A string indicating the partition on which to edit the file.
+
+    Returns:
+        A JSON response indicating success or failure. On success, returns a message
+        indicating the file was edited. On failure, returns an error message with details.
+    """
     path = request.args.get('path', None)
     data = request.json
     text = data.get('text', None)
@@ -211,6 +344,12 @@ def edit_textfile(partition):
 
 @app.route('/')
 def file_manager():
+    """
+    The function is used to generate output from a template file based on the Jinja2 engine that is found in the
+    application's templates folder
+    Returns:
+        An HTML template as a response
+    """
     return render_template('file_manager.html')
 
 
