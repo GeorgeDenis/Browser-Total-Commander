@@ -63,15 +63,11 @@ def get_partition():
     &#34;&#34;&#34;
     partitions = []
     try:
-        # Loop through each partition returned by psutil
         for partition in psutil.disk_partitions():
-            # Append the device name (e.g., &#39;C:\\&#39;, &#39;/mnt/c&#39;) to the partitions list
-            partitions.append(partition.device)
+            partitions.append(partition.device[0])
     except Exception as e:
-        # Return a JSON error message with the exception and a 500 status code
         return jsonify(error=str(e)), 500
 
-    # Return the partitions list as a JSON response with a 200 status code
     return jsonify({&#39;partitions&#39;: partitions}), 200
 
 
@@ -101,6 +97,8 @@ def create_folder(partition):
     try:
         os.mkdir(folder_path)
         return jsonify({&#39;message&#39;: &#39;Folder created successfully&#39;})
+    except OSError as oe:
+        return jsonify({&#39;error&#39;: f&#34;OS error: {str(oe)}&#34;}), 400
     except Exception as e:
         return jsonify({&#34;error&#34;: f&#34;Could not create folder {folder_path}: {e}&#34;})
 
@@ -131,6 +129,8 @@ def create_file(partition):
         return jsonify({&#39;message&#39;: f&#39;File created at {file_path}&#39;}), 201
     except FileExistsError:
         return jsonify({&#39;error&#39;: &#39;The file already exists&#39;}), 400
+    except OSError as oe:
+        return jsonify({&#39;error&#39;: f&#34;OS error: {str(oe)}&#34;}), 400
     except Exception as e:
         return jsonify({&#39;error&#39;: str(e)}), 500
 
@@ -175,24 +175,29 @@ def show_partition(partition):
 @app.route(&#39;/&#39;, methods=[&#39;DELETE&#39;])
 def delete_items():
     &#34;&#34;&#34;
-        Delete a file or a selection of files from the specified paths.
+        Delete files and directories from the specified paths.
 
-        This function deletes a file or a selection of files by their paths provided
-        via request body.
+        This function attempts to delete files and directories specified in the &#39;paths&#39; JSON array from the request
+        body.
 
         Returns:
             A JSON response indicating success or failure. On success, returns a message
             indicating the file or the files were deleted. On failure, returns an error message with details.
         &#34;&#34;&#34;
     paths = request.json.get(&#39;paths&#39;, [])
+    results = []
     for path in paths:
-        if not os.path.exists(path):
-            return jsonify({&#34;error&#34;: f&#34;Path {path} does not exist&#34;})
         try:
+            if not os.path.exists(path):
+                results.append({&#34;path&#34;: path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;Path {path} does not exist&#34;})
+                continue
             shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
+            results.append({&#34;src_path&#34;: path, &#34;status&#34;: &#34;Success&#34;})
+        except OSError as oe:
+            results.append({&#34;src_path&#34;: path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;OS error: {str(oe)}&#34;})
         except Exception as e:
-            return jsonify({&#34;error&#34;: f&#34;Could not delete element {path}: {e}&#34;})
-    return jsonify({&#34;message&#34;: &#34;All elements have been successfully deleted&#34;})
+            results.append({&#34;src_path&#34;: path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;Could not delete element {path}: {e}&#34;})
+    return jsonify({&#34;message&#34;: &#34;All elements have been successfully deleted&#34;, &#34;results&#34;: results})
 
 
 @app.route(&#39;/copy/&lt;partition&gt;&#39;, methods=[&#39;POST&#39;])
@@ -200,8 +205,10 @@ def copy_items(partition):
     &#34;&#34;&#34;Copy items from the given paths to the specified partition and path.
 
         This function attempts to copy files and directories specified in the &#39;paths&#39;
-        JSON array from the request body to the target partition and path. It returns
-        a summary of the copy operations, including successes and failures.
+        JSON array from the request body to the target partition and path with the path provided
+        via &#39;path&#39; argument in the request. If the &#39;path&#39; argument is not provided, it defaults
+        to the root of the specified partition. It returns a summary of the copy operations, including successes
+        and failures.
 
         Args:
             partition: A string indicating the target partition for the copy operation.
@@ -233,6 +240,8 @@ def copy_items(partition):
                     {&#34;src_path&#34;: src_path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: &#34;Source is not a valid file or directory&#34;})
                 continue
             results.append({&#34;src_path&#34;: src_path, &#34;dest_path&#34;: dest_path, &#34;status&#34;: &#34;Success&#34;})
+        except OSError as oe:
+            results.append({&#34;src_path&#34;: src_path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;OS error: {str(oe)}&#34;})
         except Exception as e:
             results.append({&#34;src_path&#34;: src_path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: str(e)})
     return jsonify({&#34;message&#34;: &#34;Copy operation completed&#34;, &#34;results&#34;: results})
@@ -276,6 +285,8 @@ def move_items(partition):
                 &#34;dest_path&#34;: dest_path,
                 &#34;status&#34;: &#34;Success&#34;
             })
+        except OSError as oe:
+            results.append({&#34;src_path&#34;: src_path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;OS error: {str(oe)}&#34;})
         except Exception as e:
             results.append({
                 &#34;src_path&#34;: src_path,
@@ -312,6 +323,8 @@ def rename_data():
             return jsonify({&#34;error&#34;: &#34;Destination file or directory already exists&#34;}), 400
         os.rename(source, destination)
         return jsonify({&#34;message&#34;: f&#34;Successfully renamed {source} to {destination}&#34;})
+    except OSError as oe:
+        return jsonify({&#34;error&#34;: f&#34;OS error: {str(oe)}&#34;}), 500
     except Exception as e:
         return jsonify({&#34;error&#34;: str(e)}), 500
 
@@ -342,6 +355,8 @@ def get_textfile(partition):
         return jsonify({&#34;text&#34;: content})
     except IOError as e:
         return jsonify({&#34;error&#34;: f&#34;Could not read file: {e}&#34;}), 500
+    except OSError as oe:
+        return jsonify({&#34;error&#34;: f&#34;OS error: {str(oe)}&#34;}), 500
     except Exception as e:
         return jsonify({&#34;error&#34;: str(e)}), 500
 
@@ -374,6 +389,8 @@ def edit_textfile(partition):
         return jsonify({&#34;message&#34;: f&#34;Successfully edited {path}&#34;})
     except IOError as e:
         return jsonify({&#34;error&#34;: f&#34;Could not edit file: {e}&#34;}), 500
+    except UnicodeEncodeError as e:
+        return jsonify({&#34;error&#34;: f&#34;Encoding error with provided text: {e}&#34;}), 400
     except Exception as e:
         return jsonify({&#34;error&#34;: str(e)}), 500
 
@@ -406,8 +423,10 @@ if __name__ == &#39;__main__&#39;:
 <dd>
 <div class="desc"><p>Copy items from the given paths to the specified partition and path.</p>
 <p>This function attempts to copy files and directories specified in the 'paths'
-JSON array from the request body to the target partition and path. It returns
-a summary of the copy operations, including successes and failures.</p>
+JSON array from the request body to the target partition and path with the path provided
+via 'path' argument in the request. If the 'path' argument is not provided, it defaults
+to the root of the specified partition. It returns a summary of the copy operations, including successes
+and failures.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>partition</code></strong></dt>
@@ -425,8 +444,10 @@ def copy_items(partition):
     &#34;&#34;&#34;Copy items from the given paths to the specified partition and path.
 
         This function attempts to copy files and directories specified in the &#39;paths&#39;
-        JSON array from the request body to the target partition and path. It returns
-        a summary of the copy operations, including successes and failures.
+        JSON array from the request body to the target partition and path with the path provided
+        via &#39;path&#39; argument in the request. If the &#39;path&#39; argument is not provided, it defaults
+        to the root of the specified partition. It returns a summary of the copy operations, including successes
+        and failures.
 
         Args:
             partition: A string indicating the target partition for the copy operation.
@@ -458,6 +479,8 @@ def copy_items(partition):
                     {&#34;src_path&#34;: src_path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: &#34;Source is not a valid file or directory&#34;})
                 continue
             results.append({&#34;src_path&#34;: src_path, &#34;dest_path&#34;: dest_path, &#34;status&#34;: &#34;Success&#34;})
+        except OSError as oe:
+            results.append({&#34;src_path&#34;: src_path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;OS error: {str(oe)}&#34;})
         except Exception as e:
             results.append({&#34;src_path&#34;: src_path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: str(e)})
     return jsonify({&#34;message&#34;: &#34;Copy operation completed&#34;, &#34;results&#34;: results})</code></pre>
@@ -509,6 +532,8 @@ def create_file(partition):
         return jsonify({&#39;message&#39;: f&#39;File created at {file_path}&#39;}), 201
     except FileExistsError:
         return jsonify({&#39;error&#39;: &#39;The file already exists&#39;}), 400
+    except OSError as oe:
+        return jsonify({&#39;error&#39;: f&#34;OS error: {str(oe)}&#34;}), 400
     except Exception as e:
         return jsonify({&#39;error&#39;: str(e)}), 500</code></pre>
 </details>
@@ -559,6 +584,8 @@ def create_folder(partition):
     try:
         os.mkdir(folder_path)
         return jsonify({&#39;message&#39;: &#39;Folder created successfully&#39;})
+    except OSError as oe:
+        return jsonify({&#39;error&#39;: f&#34;OS error: {str(oe)}&#34;}), 400
     except Exception as e:
         return jsonify({&#34;error&#34;: f&#34;Could not create folder {folder_path}: {e}&#34;})</code></pre>
 </details>
@@ -567,9 +594,9 @@ def create_folder(partition):
 <span>def <span class="ident">delete_items</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Delete a file or a selection of files from the specified paths.</p>
-<p>This function deletes a file or a selection of files by their paths provided
-via request body.</p>
+<div class="desc"><p>Delete files and directories from the specified paths.</p>
+<p>This function attempts to delete files and directories specified in the 'paths' JSON array from the request
+body.</p>
 <h2 id="returns">Returns</h2>
 <p>A JSON response indicating success or failure. On success, returns a message
 indicating the file or the files were deleted. On failure, returns an error message with details.</p></div>
@@ -580,24 +607,29 @@ indicating the file or the files were deleted. On failure, returns an error mess
 <pre><code class="python">@app.route(&#39;/&#39;, methods=[&#39;DELETE&#39;])
 def delete_items():
     &#34;&#34;&#34;
-        Delete a file or a selection of files from the specified paths.
+        Delete files and directories from the specified paths.
 
-        This function deletes a file or a selection of files by their paths provided
-        via request body.
+        This function attempts to delete files and directories specified in the &#39;paths&#39; JSON array from the request
+        body.
 
         Returns:
             A JSON response indicating success or failure. On success, returns a message
             indicating the file or the files were deleted. On failure, returns an error message with details.
         &#34;&#34;&#34;
     paths = request.json.get(&#39;paths&#39;, [])
+    results = []
     for path in paths:
-        if not os.path.exists(path):
-            return jsonify({&#34;error&#34;: f&#34;Path {path} does not exist&#34;})
         try:
+            if not os.path.exists(path):
+                results.append({&#34;path&#34;: path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;Path {path} does not exist&#34;})
+                continue
             shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
+            results.append({&#34;src_path&#34;: path, &#34;status&#34;: &#34;Success&#34;})
+        except OSError as oe:
+            results.append({&#34;src_path&#34;: path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;OS error: {str(oe)}&#34;})
         except Exception as e:
-            return jsonify({&#34;error&#34;: f&#34;Could not delete element {path}: {e}&#34;})
-    return jsonify({&#34;message&#34;: &#34;All elements have been successfully deleted&#34;})</code></pre>
+            results.append({&#34;src_path&#34;: path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;Could not delete element {path}: {e}&#34;})
+    return jsonify({&#34;message&#34;: &#34;All elements have been successfully deleted&#34;, &#34;results&#34;: results})</code></pre>
 </details>
 </dd>
 <dt id="main.edit_textfile"><code class="name flex">
@@ -647,6 +679,8 @@ def edit_textfile(partition):
         return jsonify({&#34;message&#34;: f&#34;Successfully edited {path}&#34;})
     except IOError as e:
         return jsonify({&#34;error&#34;: f&#34;Could not edit file: {e}&#34;}), 500
+    except UnicodeEncodeError as e:
+        return jsonify({&#34;error&#34;: f&#34;Encoding error with provided text: {e}&#34;}), 400
     except Exception as e:
         return jsonify({&#34;error&#34;: str(e)}), 500</code></pre>
 </details>
@@ -702,15 +736,11 @@ def get_partition():
     &#34;&#34;&#34;
     partitions = []
     try:
-        # Loop through each partition returned by psutil
         for partition in psutil.disk_partitions():
-            # Append the device name (e.g., &#39;C:\\&#39;, &#39;/mnt/c&#39;) to the partitions list
-            partitions.append(partition.device)
+            partitions.append(partition.device[0])
     except Exception as e:
-        # Return a JSON error message with the exception and a 500 status code
         return jsonify(error=str(e)), 500
 
-    # Return the partitions list as a JSON response with a 200 status code
     return jsonify({&#39;partitions&#39;: partitions}), 200</code></pre>
 </details>
 </dd>
@@ -759,6 +789,8 @@ def get_textfile(partition):
         return jsonify({&#34;text&#34;: content})
     except IOError as e:
         return jsonify({&#34;error&#34;: f&#34;Could not read file: {e}&#34;}), 500
+    except OSError as oe:
+        return jsonify({&#34;error&#34;: f&#34;OS error: {str(oe)}&#34;}), 500
     except Exception as e:
         return jsonify({&#34;error&#34;: str(e)}), 500</code></pre>
 </details>
@@ -821,6 +853,8 @@ def move_items(partition):
                 &#34;dest_path&#34;: dest_path,
                 &#34;status&#34;: &#34;Success&#34;
             })
+        except OSError as oe:
+            results.append({&#34;src_path&#34;: src_path, &#34;status&#34;: &#34;Failed&#34;, &#34;reason&#34;: f&#34;OS error: {str(oe)}&#34;})
         except Exception as e:
             results.append({
                 &#34;src_path&#34;: src_path,
@@ -872,6 +906,8 @@ def rename_data():
             return jsonify({&#34;error&#34;: &#34;Destination file or directory already exists&#34;}), 400
         os.rename(source, destination)
         return jsonify({&#34;message&#34;: f&#34;Successfully renamed {source} to {destination}&#34;})
+    except OSError as oe:
+        return jsonify({&#34;error&#34;: f&#34;OS error: {str(oe)}&#34;}), 500
     except Exception as e:
         return jsonify({&#34;error&#34;: str(e)}), 500</code></pre>
 </details>

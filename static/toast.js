@@ -11,7 +11,6 @@ const openToast = function (data) {
   if (!complexOperation) {
     let message = data.message ? data.message : data.error;
     let dataType = data.message ? "success" : "error";
-    console.log(dataType);
 
     const p = document.createElement("p");
     p.classList.add(dataType);

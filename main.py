@@ -63,6 +63,8 @@ def create_folder(partition):
     try:
         os.mkdir(folder_path)
         return jsonify({'message': 'Folder created successfully'})
+    except OSError as oe:
+        return jsonify({'error': f"OS error: {str(oe)}"}), 400
     except Exception as e:
         return jsonify({"error": f"Could not create folder {folder_path}: {e}"})
 
@@ -93,6 +95,8 @@ def create_file(partition):
         return jsonify({'message': f'File created at {file_path}'}), 201
     except FileExistsError:
         return jsonify({'error': 'The file already exists'}), 400
+    except OSError as oe:
+        return jsonify({'error': f"OS error: {str(oe)}"}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -155,6 +159,8 @@ def delete_items():
                 continue
             shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
             results.append({"src_path": path, "status": "Success"})
+        except OSError as oe:
+            results.append({"src_path": path, "status": "Failed", "reason": f"OS error: {str(oe)}"})
         except Exception as e:
             results.append({"src_path": path, "status": "Failed", "reason": f"Could not delete element {path}: {e}"})
     return jsonify({"message": "All elements have been successfully deleted", "results": results})
@@ -200,6 +206,8 @@ def copy_items(partition):
                     {"src_path": src_path, "status": "Failed", "reason": "Source is not a valid file or directory"})
                 continue
             results.append({"src_path": src_path, "dest_path": dest_path, "status": "Success"})
+        except OSError as oe:
+            results.append({"src_path": src_path, "status": "Failed", "reason": f"OS error: {str(oe)}"})
         except Exception as e:
             results.append({"src_path": src_path, "status": "Failed", "reason": str(e)})
     return jsonify({"message": "Copy operation completed", "results": results})
@@ -243,6 +251,8 @@ def move_items(partition):
                 "dest_path": dest_path,
                 "status": "Success"
             })
+        except OSError as oe:
+            results.append({"src_path": src_path, "status": "Failed", "reason": f"OS error: {str(oe)}"})
         except Exception as e:
             results.append({
                 "src_path": src_path,
@@ -279,6 +289,8 @@ def rename_data():
             return jsonify({"error": "Destination file or directory already exists"}), 400
         os.rename(source, destination)
         return jsonify({"message": f"Successfully renamed {source} to {destination}"})
+    except OSError as oe:
+        return jsonify({"error": f"OS error: {str(oe)}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -309,6 +321,8 @@ def get_textfile(partition):
         return jsonify({"text": content})
     except IOError as e:
         return jsonify({"error": f"Could not read file: {e}"}), 500
+    except OSError as oe:
+        return jsonify({"error": f"OS error: {str(oe)}"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -341,6 +355,8 @@ def edit_textfile(partition):
         return jsonify({"message": f"Successfully edited {path}"})
     except IOError as e:
         return jsonify({"error": f"Could not edit file: {e}"}), 500
+    except UnicodeEncodeError as e:
+        return jsonify({"error": f"Encoding error with provided text: {e}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
