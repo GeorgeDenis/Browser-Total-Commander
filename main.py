@@ -54,19 +54,24 @@ def create_folder(partition):
         indicating the folder was created. On failure, returns an error message with details.
     """
     path = request.args.get('path', None)
-    # Construct the full folder path
     folder_path = f"{partition}://{path}" if path else f"{partition}://"
+    if not path or not isinstance(path, str):
+        return jsonify({'error': 'Invalid path provided'}), 400
 
-    # Check if the folder already exists
     if os.path.isdir(folder_path):
         return jsonify({'error': 'The folder already exists'})
+
     try:
         os.mkdir(folder_path)
         return jsonify({'message': 'Folder created successfully'})
+    except PermissionError:
+        return jsonify({'error': 'Permission denied'}), 403
+    except FileNotFoundError:
+        return jsonify({'error': 'Invalid partition or path'}), 400
     except OSError as oe:
         return jsonify({'error': f"OS error: {str(oe)}"}), 400
-    except Exception as e:
-        return jsonify({"error": f"Could not create folder {folder_path}: {e}"})
+    except Exception as e:  # Catch any other unexpected errors
+        return jsonify({"error": f"Unexpected error occurred: {e}"}), 500
 
 
 @app.route('/file/<partition>', methods=['POST'])
@@ -87,14 +92,19 @@ def create_file(partition):
     path = request.args.get('path', None)
     file_path = f"{partition}://{path}" if path else f"{partition}://"
 
+    if not path or not isinstance(path, str):
+        return jsonify({'error': 'Invalid path provided'}), 400
+
     if os.path.isfile(file_path):
         return jsonify({'error': 'The file already exists'})
     try:
         with open(file_path, 'x') as file:
             pass
         return jsonify({'message': f'File created at {file_path}'}), 201
-    except FileExistsError:
-        return jsonify({'error': 'The file already exists'}), 400
+    except PermissionError:
+        return jsonify({'error': 'Permission denied'}), 403
+    except FileNotFoundError:
+        return jsonify({'error': 'Invalid partition or path'}), 400
     except OSError as oe:
         return jsonify({'error': f"OS error: {str(oe)}"}), 400
     except Exception as e:
@@ -159,6 +169,8 @@ def delete_items():
                 continue
             shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
             results.append({"src_path": path, "status": "Success"})
+        except PermissionError:
+            results.append({"path": path, "status": "Failed", "reason": "Permission denied"})
         except OSError as oe:
             results.append({"src_path": path, "status": "Failed", "reason": f"OS error: {str(oe)}"})
         except Exception as e:
@@ -206,6 +218,8 @@ def copy_items(partition):
                     {"src_path": src_path, "status": "Failed", "reason": "Source is not a valid file or directory"})
                 continue
             results.append({"src_path": src_path, "dest_path": dest_path, "status": "Success"})
+        except PermissionError:
+            results.append({"src_path": path, "status": "Failed", "reason": "Permission denied"})
         except OSError as oe:
             results.append({"src_path": src_path, "status": "Failed", "reason": f"OS error: {str(oe)}"})
         except Exception as e:
@@ -251,6 +265,8 @@ def move_items(partition):
                 "dest_path": dest_path,
                 "status": "Success"
             })
+        except PermissionError:
+            results.append({"src_path": src_path, "status": "Failed", "reason": "Permission denied"})
         except OSError as oe:
             results.append({"src_path": src_path, "status": "Failed", "reason": f"OS error: {str(oe)}"})
         except Exception as e:
@@ -289,6 +305,8 @@ def rename_data():
             return jsonify({"error": "Destination file or directory already exists"}), 400
         os.rename(source, destination)
         return jsonify({"message": f"Successfully renamed {source} to {destination}"})
+    except PermissionError:
+        return jsonify({"error": 'Permission denied'}), 403
     except OSError as oe:
         return jsonify({"error": f"OS error: {str(oe)}"}), 500
     except Exception as e:
@@ -319,6 +337,8 @@ def get_textfile(partition):
         with open(base_path, 'r', encoding='utf-8') as f:
             content = f.read()
         return jsonify({"text": content})
+    except PermissionError:
+        return jsonify({"error": 'Permission denied'}), 403
     except IOError as e:
         return jsonify({"error": f"Could not read file: {e}"}), 500
     except OSError as oe:
@@ -353,6 +373,8 @@ def edit_textfile(partition):
         with open(base_path, 'w', encoding='utf-8') as f:
             content = f.write(text)
         return jsonify({"message": f"Successfully edited {path}"})
+    except PermissionError:
+        return jsonify({"error": 'Permission denied'}), 403
     except IOError as e:
         return jsonify({"error": f"Could not edit file: {e}"}), 500
     except UnicodeEncodeError as e:
