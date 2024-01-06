@@ -173,7 +173,7 @@ def show_partition(partition):
             path = os.path.join(base_path, name)
             file_stats = os.stat(path)
             extension = os.path.splitext(name)[1]
-            size = 0 if os.path.isdir(path) else file_stats.st_size
+            size = &#34;DIR&#34; if os.path.isdir(path) else file_stats.st_size
             date = datetime.datetime.fromtimestamp(file_stats.st_ctime).strftime(&#39;%Y-%m-%d %H:%M&#39;)
             files[name] = {&#39;path&#39;: path, &#39;extension&#39;: extension, &#39;size&#39;: size, &#39;date&#39;: date}
     except Exception as e:
@@ -359,7 +359,7 @@ def get_textfile(partition):
 
         Returns:
             A JSON response indicating success or failure. On success, returns a message
-            indicating the file was edited. On failure, returns an error message with details.
+            indicating the text content. On failure, returns an error message with details.
         &#34;&#34;&#34;
     path = request.args.get(&#39;path&#39;, None)
     if not path:
@@ -386,7 +386,7 @@ def edit_textfile(partition):
     &#34;&#34;&#34;Edit a text file from the specified partition and path.
 
     This function edits a file from the specified partition and path with the path provided
-    via &#39;path&#39; argument in the request. If the &#39;path&#39; argument is not provided, it returns an error message.
+    via &#39;path&#39; argument in the request and the new text content coming from the request body. If the &#39;path&#39; argument is not provided, it returns an error message.
 
     Args:
         partition: A string indicating the partition on which to edit the file.
@@ -674,7 +674,7 @@ def delete_items():
 <dd>
 <div class="desc"><p>Edit a text file from the specified partition and path.</p>
 <p>This function edits a file from the specified partition and path with the path provided
-via 'path' argument in the request. If the 'path' argument is not provided, it returns an error message.</p>
+via 'path' argument in the request and the new text content coming from the request body. If the 'path' argument is not provided, it returns an error message.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>partition</code></strong></dt>
@@ -692,7 +692,7 @@ def edit_textfile(partition):
     &#34;&#34;&#34;Edit a text file from the specified partition and path.
 
     This function edits a file from the specified partition and path with the path provided
-    via &#39;path&#39; argument in the request. If the &#39;path&#39; argument is not provided, it returns an error message.
+    via &#39;path&#39; argument in the request and the new text content coming from the request body. If the &#39;path&#39; argument is not provided, it returns an error message.
 
     Args:
         partition: A string indicating the partition on which to edit the file.
@@ -796,7 +796,7 @@ via 'path' argument in the request. If the 'path' argument is not provided, it r
 </dl>
 <h2 id="returns">Returns</h2>
 <p>A JSON response indicating success or failure. On success, returns a message
-indicating the file was edited. On failure, returns an error message with details.</p></div>
+indicating the text content. On failure, returns an error message with details.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -813,7 +813,7 @@ def get_textfile(partition):
 
         Returns:
             A JSON response indicating success or failure. On success, returns a message
-            indicating the file was edited. On failure, returns an error message with details.
+            indicating the text content. On failure, returns an error message with details.
         &#34;&#34;&#34;
     path = request.args.get(&#39;path&#39;, None)
     if not path:
@@ -1005,7 +1005,7 @@ def show_partition(partition):
             path = os.path.join(base_path, name)
             file_stats = os.stat(path)
             extension = os.path.splitext(name)[1]
-            size = 0 if os.path.isdir(path) else file_stats.st_size
+            size = &#34;DIR&#34; if os.path.isdir(path) else file_stats.st_size
             date = datetime.datetime.fromtimestamp(file_stats.st_ctime).strftime(&#39;%Y-%m-%d %H:%M&#39;)
             files[name] = {&#39;path&#39;: path, &#39;extension&#39;: extension, &#39;size&#39;: size, &#39;date&#39;: date}
     except Exception as e:
