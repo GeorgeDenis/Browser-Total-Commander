@@ -139,7 +139,7 @@ def show_partition(partition):
             path = os.path.join(base_path, name)
             file_stats = os.stat(path)
             extension = os.path.splitext(name)[1]
-            size = 0 if os.path.isdir(path) else file_stats.st_size
+            size = "DIR" if os.path.isdir(path) else file_stats.st_size
             date = datetime.datetime.fromtimestamp(file_stats.st_ctime).strftime('%Y-%m-%d %H:%M')
             files[name] = {'path': path, 'extension': extension, 'size': size, 'date': date}
     except Exception as e:
@@ -325,7 +325,7 @@ def get_textfile(partition):
 
         Returns:
             A JSON response indicating success or failure. On success, returns a message
-            indicating the file was edited. On failure, returns an error message with details.
+            indicating the text content. On failure, returns an error message with details.
         """
     path = request.args.get('path', None)
     if not path:
@@ -352,7 +352,7 @@ def edit_textfile(partition):
     """Edit a text file from the specified partition and path.
 
     This function edits a file from the specified partition and path with the path provided
-    via 'path' argument in the request. If the 'path' argument is not provided, it returns an error message.
+    via 'path' argument in the request and the new text content coming from the request body. If the 'path' argument is not provided, it returns an error message.
 
     Args:
         partition: A string indicating the partition on which to edit the file.
