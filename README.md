@@ -17,7 +17,7 @@ To set up the WebCommander, follow these steps:
 ## Features
 -  Dual-Panel Interface: Two independent panels to display different directories for efficient file management.
 -  File Operations: Create new files and directories, rename, delete, or edit text files with ease.
--  Copy & Move: Transfer files and folders from one panel to another with a simple drag-and-drop action or through buttons.
+-  Copy & Move: Transfer files and folders from one panel to another through buttons.
 -  Information Display: View detailed information about your files and folders, such as extension, size, and modification date.
 -  Text File Editing: Open and edit text files directly within the app with the built-in text editor.
 
